@@ -2,14 +2,14 @@ import streamlit as st
 import pickle
 import numpy as np
 import os
-file_path = os.path.join(os.getcwd(), 'pipe.pkl')
-pipe = pickle.load(open(file_path, 'rb'))
+pipe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pipe.pkl')
+df_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'df.pkl')
 
-file_path_df = os.path.join(os.getcwd(), 'df.pkl')
-df = pickle.load(open(file_path_df, 'rb'))
+pipe = pickle.load(open(pipe_path, 'rb'))
+df = pickle.load(open(df_path, 'rb'))
 
-pipe = pickle.load(open('pipe.pkl','rb'))
-df = pickle.load(open('df.pkl','rb'))
+# pipe = pickle.load(open('pipe.pkl','rb'))
+# df = pickle.load(open('df.pkl','rb'))
 # pipe = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/pipe.pkl', 'rb'))
 # df = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/df.pkl', 'rb'))
 
