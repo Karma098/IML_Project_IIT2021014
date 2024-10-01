@@ -2,10 +2,10 @@ import streamlit as st
 import pickle
 import numpy as np
 
-# pipe = pickle.load(open('pipe.pkl','rb'))
-# df = pickle.load(open('df.pkl','rb'))
-pipe = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/pipe.pkl', 'rb'))
-df = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/df.pkl', 'rb'))
+pipe = pickle.load(open('pipe.pkl','rb'))
+df = pickle.load(open('df.pkl','rb'))
+# pipe = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/pipe.pkl', 'rb'))
+# df = pickle.load(open('/mount/src/iml_project_iit2021014/IML_Project/df.pkl', 'rb'))
 
 st.title("Laptop Predictor")
 
