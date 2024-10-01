@@ -46,5 +46,9 @@ if st.button('Predict Price'):
     query=np.array([company,type,ram,weight,touchscreen,ips,ppi,cpu,hdd,ssd,gpu,os])
 
     query=query.reshape(1,12)
-    prediction = str(int(np.exp(pipe.predict(query)[0])))
+    # prediction = str(int(np.exp(pipe.predict(query)[0])))
+    try:
+        prediction = str(int(np.exp(pipe.predict(query)[0])))
+    except Exception as e:
+        st.error(f"Error during prediction: {e}")
     st.title("The predicted price of this laptop can be around " + prediction) 
