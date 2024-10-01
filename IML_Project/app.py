@@ -2,27 +2,34 @@ import streamlit as st
 import pickle
 import numpy as np
 import os
+from sklearn.preprocessing import LabelEncoder
 
-# Load the model and data
 pipe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pipe.pkl')
 df_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'df.pkl')
 
 pipe = pickle.load(open(pipe_path, 'rb'))
 df = pickle.load(open(df_path, 'rb'))
 
-# Encode categorical features (assuming you have encoders saved)
-company_encoder = pickle.load(open('company_encoder.pkl', 'rb'))
-type_encoder = pickle.load(open('type_encoder.pkl', 'rb'))
-cpu_encoder = pickle.load(open('cpu_encoder.pkl', 'rb'))
-gpu_encoder = pickle.load(open('gpu_encoder.pkl', 'rb'))
-os_encoder = pickle.load(open('os_encoder.pkl', 'rb'))
-
 st.title("Laptop Predictor")
 
-# User inputs
+# Label encoders for categorical features (must match how model was trained)
+company_encoder = LabelEncoder()
+type_encoder = LabelEncoder()
+cpu_encoder = LabelEncoder()
+gpu_encoder = LabelEncoder()
+os_encoder = LabelEncoder()
+
+# Fit encoders on original training data categories
+company_encoder.fit(df['Company'])
+type_encoder.fit(df['TypeName'])
+cpu_encoder.fit(df['Cpu brand'])
+gpu_encoder.fit(df['Gpu brand'])
+os_encoder.fit(df['os'])
+
+# UI inputs
 company = st.selectbox('Brand', df['Company'].unique())
 type = st.selectbox('Type', df['TypeName'].unique())
-ram = st.selectbox('RAM(in GB)', [2, 4, 6, 8, 12, 16, 244, 32, 64])
+ram = st.selectbox('RAM(in GB)', [2, 4, 6, 8, 12, 16, 24, 32, 64])
 weight = st.number_input('Weight(in Kg)')
 touchscreen = st.selectbox('Touchscreen', ['No', 'Yes'])
 ips = st.selectbox('IPS', ['No', 'Yes'])
@@ -44,34 +51,23 @@ if st.button('Predict Price'):
         os_encoded = os_encoder.transform([os])[0]
 
         # Convert other inputs
-        touchscreen = 1 if touchscreen == 'Yes' else 0
-        ips = 1 if ips == 'Yes' else 0
+        if touchscreen == 'Yes':
+            touchscreen = 1
+        else:
+            touchscreen = 0
+
+        if ips == 'Yes':
+            ips = 1
+        else:
+            ips = 0
 
         X_res = int(resolution.split('x')[0])
         Y_res = int(resolution.split('x')[1])
         ppi = ((X_res ** 2) + (Y_res ** 2)) ** 0.5 / screen_size
 
         # Create input query array
-        query = np.array([
-            float(company_encoded),
-            float(type_encoded),
-            int(ram),
-            float(weight),
-            int(touchscreen),
-            int(ips),
-            float(ppi),
-            float(cpu_encoded),
-            int(hdd),
-            int(ssd),
-            float(gpu_encoded),
-            float(os_encoded)
-        ])
-
-        # Reshape the query for the model
+        query = np.array([company_encoded, type_encoded, ram, weight, touchscreen, ips, ppi, cpu_encoded, hdd, ssd, gpu_encoded, os_encoded])
         query = query.reshape(1, -1)
-
-        # Debugging: Check types of the query array
-        print("Input types:", [type(x) for x in query.flatten()])
 
         # Predict
         prediction = str(int(np.exp(pipe.predict(query)[0])))
