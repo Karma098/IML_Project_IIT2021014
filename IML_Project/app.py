@@ -1,6 +1,12 @@
 import streamlit as st
 import pickle
 import numpy as np
+import os
+file_path = os.path.join(os.getcwd(), 'pipe.pkl')
+pipe = pickle.load(open(file_path, 'rb'))
+
+file_path_df = os.path.join(os.getcwd(), 'df.pkl')
+df = pickle.load(open(file_path_df, 'rb'))
 
 pipe = pickle.load(open('pipe.pkl','rb'))
 df = pickle.load(open('df.pkl','rb'))
