@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import os
-from sklearn.preprocessing import LabelEncoder  # Only if needed for encoding
+from sklearn.preprocessing import LabelEncoder
 
 pipe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pipe.pkl')
 df_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'df.pkl')
@@ -12,6 +12,21 @@ df = pickle.load(open(df_path, 'rb'))
 
 st.title("Laptop Predictor")
 
+# Label encoders for categorical features (must match how model was trained)
+company_encoder = LabelEncoder()
+type_encoder = LabelEncoder()
+cpu_encoder = LabelEncoder()
+gpu_encoder = LabelEncoder()
+os_encoder = LabelEncoder()
+
+# Fit encoders on original training data categories
+company_encoder.fit(df['Company'])
+type_encoder.fit(df['TypeName'])
+cpu_encoder.fit(df['Cpu brand'])
+gpu_encoder.fit(df['Gpu brand'])
+os_encoder.fit(df['os'])
+
+# UI inputs
 company = st.selectbox('Brand', df['Company'].unique())
 type = st.selectbox('Type', df['TypeName'].unique())
 ram = st.selectbox('RAM(in GB)', [2, 4, 6, 8, 12, 16, 24, 32, 64])
@@ -28,11 +43,19 @@ os = st.selectbox('OS', df['os'].unique())
 
 if st.button('Predict Price'):
     try:
-        ppi = None
+        # Encode categorical inputs
+        company_encoded = company_encoder.transform([company])[0]
+        type_encoded = type_encoder.transform([type])[0]
+        cpu_encoded = cpu_encoder.transform([cpu])[0]
+        gpu_encoded = gpu_encoder.transform([gpu])[0]
+        os_encoded = os_encoder.transform([os])[0]
+
+        # Convert other inputs
         if touchscreen == 'Yes':
             touchscreen = 1
         else:
             touchscreen = 0
+
         if ips == 'Yes':
             ips = 1
         else:
@@ -40,20 +63,15 @@ if st.button('Predict Price'):
 
         X_res = int(resolution.split('x')[0])
         Y_res = int(resolution.split('x')[1])
-        ppi = ((X_res**2) + (Y_res**2))**0.5 / screen_size
+        ppi = ((X_res ** 2) + (Y_res ** 2)) ** 0.5 / screen_size
 
-        # Constructing the query with input values
-        query = np.array([company, type, ram, weight, touchscreen, ips, ppi, cpu, hdd, ssd, gpu, os])
+        # Create input query array
+        query = np.array([company_encoded, type_encoded, ram, weight, touchscreen, ips, ppi, cpu_encoded, hdd, ssd, gpu_encoded, os_encoded])
         query = query.reshape(1, -1)
 
-        # Debugging: Print input to check for errors
-        st.write("Input query: ", query)
-
-        # Ensure the pipeline handles preprocessing (no manual encoding)
+        # Predict
         prediction = str(int(np.exp(pipe.predict(query)[0])))
         st.title(f"The predicted price of this laptop can be around {prediction}")
 
     except Exception as e:
         st.error(f"Error during prediction: {e}")
-        # Debugging: Log the error and inputs
-        st.write(f"Error details: {e}")
